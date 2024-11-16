@@ -9,8 +9,7 @@ import { useDispatch, useStore } from "react-redux";
 import {
     AuthorizationBackground,
     StyledAuthorization,
-} from "../../components/styeld-modal-overlay";
-import PropTypes from "prop-types";
+} from "../styeld-modal-overlay";
 
 const regFormSchema = yup.object().shape({
     login: yup
@@ -54,7 +53,6 @@ export const Registration = () => {
                 return;
             }
             dispatch(setUser(res));
-            sessionStorage.setItem("userData", JSON.stringify(res));
             navigate("/");
         });
     };
@@ -112,10 +110,4 @@ export const Registration = () => {
             </StyledAuthorization>
         </AuthorizationBackground>
     );
-};
-
-Registration.propTypes = {
-    login: PropTypes.string,
-    password: PropTypes.string,
-    passwordRepeat: PropTypes.string,
 };

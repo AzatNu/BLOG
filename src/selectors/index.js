@@ -5,4 +5,3 @@ export * from "./select-user-session";
 export * from "./select-delete-button-click";
 export * from "./select-delete-user-login";
 export * from "./select-user-id";
-export * from "./select-delete-post-button-click";
