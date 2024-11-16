@@ -1,15 +1,6 @@
 import styled from "styled-components";
-
-export const CopyrightBlock = () => {
-    return (
-        <Copyright>
-            <p>
-                Все права защищены,
-                <br />© 2024-2025
-            </p>
-        </Copyright>
-    );
-};
+import { Link } from "react-router-dom";
+const MenuItem = styled.div``;
 const Copyright = styled.div`
     display: flex;
     width: 200px;
@@ -21,3 +12,13 @@ const Copyright = styled.div`
         font-size: 10px;
     }
 `;
+export const CopyrightBlock = () => {
+    return (
+        <Copyright>
+            <p>
+                Все права защищены,
+                <br />© 2024-2025
+            </p>
+        </Copyright>
+    );
+};
