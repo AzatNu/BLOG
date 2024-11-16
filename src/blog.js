@@ -6,9 +6,15 @@ import {
     Users,
     Post,
     PostId,
+    PostCreate,
+    PostEdit,
+    Error
 } from "./pages/index";
-
+import { useDispatch } from "react-redux";
+import { setUser } from "./bff/actions";
 import styled from "styled-components";
+import { useLayoutEffect } from "react";
+
 
 const AppColumn = styled.div`
     display: flex;
@@ -24,17 +30,28 @@ const AppColumn = styled.div`
 `;
 
 export const Blog = () => {
+    const dispatch = useDispatch();
+
+    useLayoutEffect(() => {
+        const currentUserData = sessionStorage.getItem('userData');
+        if (!currentUserData) {
+            return;
+        }
+        const currentUserDataJSON = JSON.parse(currentUserData);
+        dispatch(setUser(currentUserDataJSON));
+    }, [dispatch]);
     return (
         <AppColumn>
             <StyledHeader />
             <Routes>
-                <Route path="/" element={<div> Главная страница</div>} />
+                <Route path="/" element={<Post />} />
                 <Route path="/login" element={<Authorization />} />
                 <Route path="/register" element={<Registration />} />
                 <Route path="/users" element={<Users />} />
-                <Route path="/post" element={<Post />} />
                 <Route path="/post/:postId" element={<PostId />} />
-                <Route path="*" element={<div>Ошибка</div>} />
+                <Route path="/postCreate" element={<PostCreate />}/>
+                <Route path="/post/:postId/edit" element={<PostEdit />} />
+                    <Route path="*" element={<Error />} />
             </Routes>
             <StyledFooter />
         </AppColumn>

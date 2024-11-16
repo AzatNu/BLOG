@@ -1,66 +1,142 @@
 import styled from "styled-components";
 import { Link } from "react-router-dom";
-import { getPosts } from "../../bff/api";
+import { getComments, getPosts } from "../../bff/api";
 import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 
 export const Post = () => {
     const [posts, setPosts] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const [comments, setComments] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const postsPerPage = 10;
     useEffect(() => {
         getPosts().then((data) => setPosts(data));
     }, []);
-
+    useEffect(() => {
+        getComments().then((data) => setComments(data));
+    }, []);
     const searchInPosts = () => {
         const filteredPosts = posts.filter((post) =>
             post.title.toLowerCase().includes(searchQuery.toLowerCase())
         );
         setPosts(filteredPosts);
     };
-
+    const indexOfLastPost = currentPage * postsPerPage;
+    const indexOfFirstPost = indexOfLastPost - postsPerPage;
+    const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
     return (
-        <PostPage>
-            <h2>
-                <i className="fa fa-file-text"> &nbsp;Статьи</i>
-            </h2>
-            <SearchInPosts>
-                <input
-                    placeholder="Напишите заголовок статьи, которую хотите найти"
-                    value={searchQuery}
-                    onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                    }}
-                />
-                <h
-                    className="fa fa-refresh"
-                    title="Сбросить поиск"
-                    onClick={() => {
-                        getPosts().then((data) => setPosts(data));
-                        setSearchQuery("");
-                    }}
-                ></h>
-                <h
-                    className="fa fa-search"
-                    title="Сбросить поиск"
-                    onClick={() => {
-                        searchInPosts();
-                        setSearchQuery("");
-                    }}
-                ></h>
-            </SearchInPosts>
-            <PostContainer>
-                {posts.map((post, index) => (
-                    <Link to={`/post/${post.id}`}>
-                        <div key={index}>
-                            <p>{post.published_at}</p>
-                            <img src={post.image_url} alt="post" />
-                            <h2>{post.title}</h2>
-                        </div>
-                    </Link>
-                ))}
-            </PostContainer>
-        </PostPage>
+        <>
+            <PostPage>
+                <h2 className="fa fa-file-text"> Главная</h2>
+                <SearchInPosts>
+                    <input
+                        placeholder="Напишите заголовок статьи, которую хотите найти"
+                        value={searchQuery}
+                        onChange={(e) => {
+                            setSearchQuery(e.target.value);
+                        }}
+                    />
+                    <button
+                        className="fa fa-refresh"
+                        title="Сбросить поиск"
+                        onClick={() => {
+                            getPosts().then((data) => setPosts(data));
+                            setSearchQuery("");
+                        }}
+                    ></button>
+                    <button
+                        className="fa fa-search"
+                        title="Поиск"
+                        onClick={() => {
+                            searchInPosts();
+                        }}
+                    ></button>
+                </SearchInPosts>
+                <PostContainer>
+                    {currentPosts.map((post) => (
+                        <Link to={`/post/${post.id}`} key={post.id}>
+                            <div>
+                                <p className="fa fa-comment">
+                                    {
+                                        comments.filter(
+                                            (comment) =>
+                                                comment.post_id === post.id
+                                        ).length
+                                    }
+                                </p>
+                                <img src={post.image_url} alt="post" />
+                                <h2>
+                                    {post.title} (
+                                    {new Date(post.published_at).toLocaleString(
+                                        "ru",
+                                        {
+                                            year: "2-digit",
+                                            month: "2-digit",
+                                            day: "2-digit",
+                                        }
+                                    )}
+                                    )
+                                </h2>
+                            </div>
+                        </Link>
+                    ))}
+                </PostContainer>
+                <h3>Странциа: {currentPage}</h3>
+            </PostPage>
+            <Pagination>
+                <button
+                    title="Перейти в начало"
+                    className="fa fa-arrow-left"
+                    onClick={() => paginate(1)}
+                ></button>
+                {Array.from(
+                    { length: Math.ceil(posts.length / postsPerPage) },
+                    (_, i) => (
+                        <button key={i + 1} onClick={() => paginate(i + 1)}>
+                            {i + 1}
+                        </button>
+                    )
+                )}
+                <button
+                    title="Перейти в конец"
+                    className="fa fa-arrow-right"
+                    onClick={() =>
+                        paginate(Math.ceil(posts.length / postsPerPage))
+                    }
+                ></button>
+            </Pagination>
+        </>
     );
 };
+const Pagination = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0px 0 10px 0;
+    button {
+        display: flex;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        outline: none;
+        border: none;
+        text-align-last: center;
+        background-image: linear-gradient(to top, #76da81, azure);
+        cursor: pointer;
+        color: black;
+        justify-content: center;
+        align-items: center;
+        font-size: 25px;
+        transition: all 0.5s ease;
+        margin: 0 5px 120px 5px;
+        &:hover {
+            animation: shake 0.5s;
+            animation-iteration-count: 1;
+        }
+    }
+`;
 const SearchInPosts = styled.div`
     height: 70px;
     display: flex;
@@ -78,7 +154,7 @@ const SearchInPosts = styled.div`
         padding: 0 10px;
         outline: none;
     }
-    h {
+    button {
         display: flex;
         width: 50px;
         height: 50px;
@@ -95,8 +171,8 @@ const SearchInPosts = styled.div`
         transition: all 0.5s ease;
         margin: 0 5px 0 5px;
         &:hover {
-            background-image: linear-gradient(to top, yellow, yellow);
-            transform: scale(1.05);
+            animation: shake 0.5s;
+            animation-iteration-count: 1;
         }
     }
 `;
@@ -112,6 +188,7 @@ const PostContainer = styled.div`
         text-decoration: none;
     }
     div {
+        height: 450px;
         background-image: linear-gradient(to top, #76da81, azure);
         border-radius: 10px;
         text-align: center;
@@ -123,28 +200,31 @@ const PostContainer = styled.div`
         }
         h2 {
             text-align: center;
-            height: 80px;
-            margin: 10px;
             color: black;
-            font-size: 20px;
+            font-size: 15px;
         }
         p {
-            margin: 0;
-            text-align: center;
-            color: black;
-            font-size: 20px;
             background-image: linear-gradient(to top, #76da81, azure);
-            border-radius: 10px 10px 0px 0px;
+            height: 20px;
+            margin: 0px 0px 0px 0px;
+            padding: 5px;
+            color: black;
+            font-size: 15px;
+            display: flex;
+            border-radius: 10px 10px 0 0px;
+            align-items: center;
+            flex-direction: row;
+            justify-content: space-between;
         }
     }
     > *:hover {
-        animation: scale 0.5s forwards;
+        animation: scale 0.2s ease-in forwards;
         @keyframes scale {
             0% {
                 transform: scale(1);
             }
             100% {
-                transform: scale(1.05);
+                transform: scale(1.1);
             }
         }
     }
@@ -155,7 +235,7 @@ const PostPage = styled.div`
     color: white;
     justify-content: center;
     align-items: center;
-    margin: 120px 0 120px 0;
+    margin: 130px 0 20px 0;
     width: 100%;
     height: 100%;
     border-radius: 20px;
@@ -170,8 +250,21 @@ const PostPage = styled.div`
         border-radius: 20px;
     }
     h2 {
+        max-width: 300px;
         font-size: 30px;
-
-        margin: 0;
+        margin: 20px;
+        text-align: center;
+        word-wrap: break-word;
     }
 `;
+
+PostPage.propTypes = {
+    posts: PropTypes.arrayOf(
+        PropTypes.shape({
+            id: PropTypes.number.isRequired,
+            title: PropTypes.string.isRequired,
+            body: PropTypes.string.isRequired,
+            image: PropTypes.string.isRequired,
+        })
+    ),
+};

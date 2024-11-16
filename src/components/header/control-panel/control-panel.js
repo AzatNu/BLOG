@@ -15,6 +15,10 @@ export const StyledControlPanel = ({ clasName }) => {
     const roleId = useSelector(selectUserRole);
     const login = useSelector(selectUserLogin);
     const session = useSelector(selectUserSession);
+    const onLogout = () => {
+        dispatch(logout(session));
+        sessionStorage.removeItem("userData");
+    };
     return (
         <ControlPanel className={clasName}>
             <StyledUserLogin title={`Вы авторизовались как ${login}`}>
@@ -24,17 +28,26 @@ export const StyledControlPanel = ({ clasName }) => {
                 <i className="fa fa-arrow-left" aria-hidden="true"></i>
             </ControlPanelButton>
             <Link to="/users" style={{ textDecoration: "none" }}>
-                <ControlPanelButton
-                    title="Пользователи"
-                    disabled={roleId !== ROLE.ADMIN}
-                >
-                    <i className="fa fa-users" aria-hidden="true"></i>
+                {roleId === ROLE.ADMIN ? (
+                    <ControlPanelButton
+                        title="Пользователи"
+                        disabled={roleId !== ROLE.ADMIN}
+                    >
+                        <i className="fa fa-users" aria-hidden="true"></i>
+                    </ControlPanelButton>
+                ) : null}
+            </Link>
+            <Link to="/">
+                <ControlPanelButton title="Главная">
+                    <i className="fa fa-file-text" aria-hidden="true"></i>
                 </ControlPanelButton>
             </Link>
-            <Link to="/post">
-                <ControlPanelButton title="Статьи">
-                    <i class="fa fa-file-text" aria-hidden="true"></i>
-                </ControlPanelButton>
+            <Link to="/postCreate">
+                {roleId === ROLE.ADMIN || roleId === ROLE.MODERATOR ? (
+                    <ControlPanelButton title="Создать статью">
+                        <i className="fa fa-plus" aria-hidden="true"></i>
+                    </ControlPanelButton>
+                ) : null}
             </Link>
             {roleId === ROLE.GUEST ? (
                 <Link to="/login" style={{ textDecoration: "none" }}>
@@ -50,7 +63,7 @@ export const StyledControlPanel = ({ clasName }) => {
                     title="Выйти из аккаунта"
                     style={{ backgroundColor: "#FF6347" }}
                     onClick={() => {
-                        dispatch(logout(session));
+                        onLogout();
                     }}
                 >
                     <i className="fa fa-sign-out" aria-hidden="true"></i>
@@ -67,6 +80,9 @@ const ControlPanel = styled.div`
     align-items: center;
     font-size: 15px;
     justify-content: flex-end;
+    > a {
+        text-decoration: none;
+    }
 `;
 
 const ControlPanelButton = styled.button`
@@ -85,21 +101,11 @@ const ControlPanelButton = styled.button`
     border: none;
     font-size: 20px;
     margin-right: 10px;
-    &:hover {
-        animation: scale 1s infinite;
-        @keyframes scale {
-            0% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.2);
-            }
-            100% {
-                transform: scale(1);
-            }
+      &:hover {
+            animation: shake 0.5s;
+            animation-iteration-count: 1;
         }
     }
-    text-decoration: none;
 `;
 
 const StyledUserLogin = styled.div`

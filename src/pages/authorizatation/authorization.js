@@ -10,7 +10,8 @@ import { useDispatch, useStore } from "react-redux";
 import {
     AuthorizationBackground,
     StyledAuthorization,
-} from "../styeld-modal-overlay";
+} from "../../components/styeld-modal-overlay";
+import PropTypes from "prop-types";
 const authFormSchema = yup.object().shape({
     login: yup
         .string()
@@ -50,6 +51,7 @@ export const Authorization = () => {
                 return;
             }
             dispatch(setUser(res));
+            sessionStorage.setItem("userData", JSON.stringify(res));
             navigate("/");
         });
     };
@@ -102,4 +104,14 @@ export const Authorization = () => {
             </StyledAuthorization>
         </AuthorizationBackground>
     );
+};
+
+Authorization.propTypes = {
+    navigate: PropTypes.func,
+    dispatch: PropTypes.func,
+    reset: PropTypes.func,
+    handleSubmit: PropTypes.func,
+    formState: PropTypes.func,
+    register: PropTypes.func,
+    errors: PropTypes.func,
 };
